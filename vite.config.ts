@@ -1,7 +1,7 @@
 import { vitePlugin as remix } from '@remix-run/dev';
 import UnoCSS from 'unocss/vite';
 import { defineConfig } from 'vite';
-// Use dynamic import to avoid TypeScript issues
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { optimizeCssModules } from 'vite-plugin-optimize-css-modules';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
@@ -10,18 +10,9 @@ export default defineConfig({
     target: 'esnext',
   },
   plugins: [
-    // Use a plugin object directly since we can't import properly
-    {
-      name: 'node-polyfills',
-      config: () => ({
-        resolve: {
-          alias: {
-            path: 'rollup-plugin-node-polyfills/polyfills/path',
-            buffer: 'rollup-plugin-node-polyfills/polyfills/buffer',
-          },
-        },
-      }),
-    } as any,
+    nodePolyfills({
+      include: ['path', 'buffer'],
+    }),
     remix({
       future: {
         v3_fetcherPersist: true,
