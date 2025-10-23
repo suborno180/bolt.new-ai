@@ -7,16 +7,13 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "deploy": "npm run build && wrangler pages deploy",
     "build": "remix vite:build",
     "dev": "remix vite:dev",
     "test": "vitest --run",
     "test:watch": "vitest",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
     "lint:fix": "npm run lint -- --fix",
-    "start": "bindings=$(./bindings.sh) && wrangler pages dev ./build/client $bindings",
     "typecheck": "tsc",
-    "typegen": "wrangler types",
     "preview": "pnpm run build && pnpm run start"
   },
   "engines": {
@@ -45,8 +42,7 @@
     "@nanostores/react": "^0.7.2",
     "@radix-ui/react-dialog": "^1.1.1",
     "@radix-ui/react-dropdown-menu": "^2.1.1",
-    "@remix-run/cloudflare": "^2.10.2",
-    "@remix-run/cloudflare-pages": "^2.10.2",
+    "@remix-run/node": "^2.10.2",
     "@remix-run/react": "^2.10.2",
     "@uiw/codemirror-theme-vscode": "^4.23.0",
     "@unocss/reset": "^0.61.0",
@@ -54,7 +50,7 @@
     "@xterm/addon-fit": "^0.10.0",
     "@xterm/addon-web-links": "^0.11.0",
     "@xterm/xterm": "^5.5.0",
-    "ai": "^3.3.4",
+    "ai": "^3.4.33",
     "date-fns": "^3.6.0",
     "diff": "^5.2.0",
     "framer-motion": "^11.2.12",
@@ -78,8 +74,8 @@
   },
   "devDependencies": {
     "@blitz/eslint-plugin": "0.1.0",
-    "@cloudflare/workers-types": "^4.20240620.0",
-    "@remix-run/dev": "^2.10.0",
+    "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
+    "@remix-run/dev": "^2.10.2",
     "@types/diff": "^5.2.1",
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
@@ -95,7 +91,6 @@
     "vite-plugin-optimize-css-modules": "^1.1.0",
     "vite-tsconfig-paths": "^4.3.2",
     "vitest": "^2.0.1",
-    "wrangler": "^3.63.2",
     "zod": "^3.23.8"
   },
   "resolutions": {

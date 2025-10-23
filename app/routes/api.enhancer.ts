@@ -1,5 +1,4 @@
-import { type ActionFunctionArgs } from '@remix-run/cloudflare';
-import { StreamingTextResponse, parseStreamPart } from 'ai';
+import { type ActionFunctionArgs } from '@remix-run/node';
 import { streamText } from '~/lib/.server/llm/stream-text';
 import { stripIndents } from '~/utils/stripIndent';
 
@@ -10,10 +9,17 @@ export async function action(args: ActionFunctionArgs) {
   return enhancerAction(args);
 }
 
-async function enhancerAction({ context, request }: ActionFunctionArgs) {
-  const { message } = await request.json<{ message: string }>();
+async function enhancerAction({ request }: ActionFunctionArgs) {
+  const body = await request.json();
+  const { message } = body as { message: string };
 
   try {
+    // Create a proper env object for Node.js
+    const env = {
+      ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+      // Add other required environment variables here
+    } as any; // Use 'any' to bypass type checking temporarily
+
     const result = await streamText(
       [
         {
@@ -29,7 +35,7 @@ async function enhancerAction({ context, request }: ActionFunctionArgs) {
         `,
         },
       ],
-      context.cloudflare.env,
+      env
     );
 
     const transformStream = new TransformStream({
@@ -38,8 +44,18 @@ async function enhancerAction({ context, request }: ActionFunctionArgs) {
           .decode(chunk)
           .split('\n')
           .filter((line) => line !== '')
-          .map(parseStreamPart)
-          .map((part) => part.value)
+          .map((line) => {
+            try {
+              // Parse the stream part manually
+              if (line.startsWith('0:')) {
+                const data = JSON.parse(line.slice(2));
+                return data.value || '';
+              }
+              return '';
+            } catch {
+              return '';
+            }
+          })
           .join('');
 
         controller.enqueue(encoder.encode(processedChunk));
@@ -48,10 +64,11 @@ async function enhancerAction({ context, request }: ActionFunctionArgs) {
 
     const transformedStream = result.toAIStream().pipeThrough(transformStream);
 
-    return new StreamingTextResponse(transformedStream);
+    return new Response(transformedStream, {
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    });
   } catch (error) {
     console.log(error);
-
     throw new Response(null, {
       status: 500,
       statusText: 'Internal Server Error',
